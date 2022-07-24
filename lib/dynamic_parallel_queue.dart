@@ -39,6 +39,10 @@ class Queue {
     return _task.completer.future;
   }
 
+  int get processing => _progressing.length;
+
+  int get pending => _pending.length;
+
   /// Execute new task
   void _execute() {
     // print('_execute ${{
