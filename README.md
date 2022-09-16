@@ -34,7 +34,7 @@ void main() async {
   
   final List<int> res = [];
 
-  // Add a async function will return a future variable
+  // Add a async function, return Future
   final task1 = queue.add(() async {
     await Future.delayed(Duration(milliseconds: 30));
     res.add(1);
@@ -42,7 +42,7 @@ void main() async {
   // You can wait it done.
   await task1;
 
-  // add a list
+  // add a list, return Future
   final tasks = queue.addAll([
     () async {
       await Future.delayed(Duration(milliseconds: 20));
@@ -54,7 +54,8 @@ void main() async {
     },
   ]);
 
-  /// You can wait for the task to complete
+  /// You can wait for the tasks to complete
+  /// But not need here
   // await tasks;
 
 
