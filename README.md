@@ -93,10 +93,6 @@ void main() async {
     },
   ]);
 
-  /// Remove all pending tasks
-  // queue.clear();
-
-
   /// Wait for the queue to complete
   await queue.whenComplete();
 }
