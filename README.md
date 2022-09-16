@@ -25,37 +25,116 @@ import 'package:dynamic_parallel_queue/dynamic_parallel_queue.dart';
 
 ## Usage
 
+### Serial queue
+
 ```dart
 void main() async {
-  final queue = Queue(parallel: 1); // Serial queue
+  // Now it's a serial queue, parallel default is 5
+  final queue = Queue(parallel: 1);
+  
+  final List<int> res = [];
 
-  queue.add(() async {
-    await Future.delayed(Duration(milliseconds: 100));
-    return 100;
-  }).then((value) {
-    print('task done, value:$value');
+  // Add a async function will return a future variable
+  final task1 = queue.add(() async {
+    await Future.delayed(Duration(milliseconds: 30));
+    res.add(1);
   });
+  // You can wait it done.
+  await task1;
 
-  /// You can change the parallel value of the queue at any time
-  /// Including while there are still tasks executing
-  queue.parallel = 10; // Change to parallel queue
+  // add a list
+  final tasks = queue.addAll([
+    () async {
+      await Future.delayed(Duration(milliseconds: 20));
+      res.add(2);
+    },
+    () async {
+      await Future.delayed(Duration(milliseconds: 10));
+      res.add(3);
+    },
+  ]);
 
-  List.generate(20, (index) async {
-    index += 1;
-    final milliseconds = index * 10;
-    final value = await queue.add(() async {
-      await Future.delayed(Duration(milliseconds: milliseconds));
-      return milliseconds;
-    });
-    print('task $index done, value:$value');
-  });
+  /// You can wait for the task to complete
+  // await tasks;
 
 
-  /// Clear all pending tasks
+  /// Remove all pending tasks
   // queue.clear();
 
   /// Wait for the queue to complete
   await queue.whenComplete();
-  print('All done');
 }
 ```
+
+Although their wait times are different, buy they are executed in order.
+
+Console output: `[1, 2, 3]`
+
+### Parallel Queue
+
+```dart
+void main() async {
+  final queue = Queue();
+  final List<int> res = [];
+
+  queue.addAll([
+    () async {
+      await Future.delayed(Duration(milliseconds: 30));
+      res.add(1);
+    },
+    () async {
+      await Future.delayed(Duration(milliseconds: 20));
+      res.add(2);
+    },
+    () async {
+      await Future.delayed(Duration(milliseconds: 10));
+      res.add(3);
+    },
+  ]);
+
+  /// Remove all pending tasks
+  // queue.clear();
+
+
+  /// Wait for the queue to complete
+  await queue.whenComplete();
+}
+```
+
+Console output `[3, 2, 1]`
+
+### Serial queue change to parallel queue
+
+```dart
+void main() async {
+  final queue = Queue(parallel: 1);
+  final List<int> res = [];
+  final task1 = queue.add(() async {
+    await Future.delayed(Duration(milliseconds: 50));
+    
+    /// You can change it at any time.
+    queue.parallel = 5;
+    
+    res.add(1);
+  });
+  await task1;
+  queue.addAll([
+    () async {
+      await Future.delayed(Duration(milliseconds: 30));
+      res.add(2);
+    },
+    () async {
+      await Future.delayed(Duration(milliseconds: 20));
+      res.add(3);
+    },
+    () async {
+      await Future.delayed(Duration(milliseconds: 10));
+      res.add(4);
+    },
+  ]);
+  await queue.whenComplete();
+  print(res);
+}
+```
+
+Console output `[1, 4, 3, 2]`

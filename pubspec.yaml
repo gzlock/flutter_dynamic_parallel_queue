@@ -1,6 +1,7 @@
 name: dynamic_parallel_queue
 description: A easy to use and dynamic parallel queue.
-version: 1.0.1
+
+version: 1.0.2
 homepage: https://github.com/gzlock/flutter_dynamic_parallel_queue
 
 environment:

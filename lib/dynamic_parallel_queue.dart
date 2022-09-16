@@ -31,12 +31,24 @@ class Queue {
     _execute();
   }
 
-  /// Add new task
+  /// Add a new task
   Future add(Task task) async {
     final _task = _Task(task);
     _pending.add(_task);
     _execute();
     return _task.completer.future;
+  }
+
+  /// Add some new tasks
+  Future addAll(Iterable<Task> tasks) {
+    final List<Future> futures = [];
+    _pending.addAll(tasks.map((item) {
+      final task = _Task(item);
+      futures.add(task.completer.future);
+      return task;
+    }));
+    _execute();
+    return Future.wait(futures);
   }
 
   int get processing => _progressing.length;
