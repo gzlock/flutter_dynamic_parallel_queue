@@ -23,7 +23,7 @@ void main() {
     expect(res, [1, 2, 3]);
   });
   test('parallel queue', () async {
-    final queue = Queue();
+    final queue = Queue(parallel: 5);
     final List<int> res = [];
     queue.addAll([
       () async {
@@ -68,5 +68,18 @@ void main() {
     ]);
     await queue.whenComplete();
     expect(res, [1, 4, 3, 2]);
+  });
+  test('priority test', () async {
+    final queue = Queue(parallel: 2);
+    final List<int> res = [];
+    queue.addAll([
+      () async => res.add(1),
+      () async => res.add(2),
+    ], priority: 10);
+    queue.add(() async => res.add(3), priority: 3);
+    queue.add(() async => res.add(4), priority: 2);
+    queue.add(() async => res.add(0), priority: -1); // Support negative priority
+    await queue.whenComplete();
+    expect(res, [1, 2, 0, 4, 3]);
   });
 }

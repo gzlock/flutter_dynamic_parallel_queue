@@ -15,7 +15,7 @@ and the Flutter guide for
 
 ## Features
 
-Easy to use(so, no example project folder), Efficient, Pure
+Easy to use(so, no example file), Efficient, Pure
 
 ## Getting started
 
@@ -31,7 +31,7 @@ import 'package:dynamic_parallel_queue/dynamic_parallel_queue.dart';
 void main() async {
   // Now it's a serial queue, parallel default is 5
   final queue = Queue(parallel: 1);
-  
+
   final List<int> res = [];
 
   // Add a async function, return Future
@@ -44,11 +44,11 @@ void main() async {
 
   // add a list, return Future
   final tasks = queue.addAll([
-    () async {
+        () async {
       await Future.delayed(Duration(milliseconds: 20));
       res.add(2);
     },
-    () async {
+        () async {
       await Future.delayed(Duration(milliseconds: 10));
       res.add(3);
     },
@@ -79,15 +79,15 @@ void main() async {
   final List<int> res = [];
 
   queue.addAll([
-    () async {
+        () async {
       await Future.delayed(Duration(milliseconds: 30));
       res.add(1);
     },
-    () async {
+        () async {
       await Future.delayed(Duration(milliseconds: 20));
       res.add(2);
     },
-    () async {
+        () async {
       await Future.delayed(Duration(milliseconds: 10));
       res.add(3);
     },
@@ -95,10 +95,9 @@ void main() async {
 
   /// Wait for the queue to complete
   await queue.whenComplete();
+  print(res); // [3, 2, 1]
 }
 ```
-
-Console output `[3, 2, 1]`
 
 ### Serial queue change to parallel queue
 
@@ -108,30 +107,48 @@ void main() async {
   final List<int> res = [];
   final task1 = queue.add(() async {
     await Future.delayed(Duration(milliseconds: 50));
-    
+
     /// You can change it at any time.
     queue.parallel = 5;
-    
+
     res.add(1);
   });
   await task1;
   queue.addAll([
-    () async {
+        () async {
       await Future.delayed(Duration(milliseconds: 30));
       res.add(2);
     },
-    () async {
+        () async {
       await Future.delayed(Duration(milliseconds: 20));
       res.add(3);
     },
-    () async {
+        () async {
       await Future.delayed(Duration(milliseconds: 10));
       res.add(4);
     },
   ]);
   await queue.whenComplete();
-  print(res);
+  print(res); // [1, 4, 3, 2]
 }
 ```
 
-Console output `[1, 4, 3, 2]`
+### About priority(default priority is 1)
+
+#### **The fewer value is mean the higher priority.**
+
+```dart
+void main() async {
+  final queue = Queue(parallel: 2);
+  final List<int> res = [];
+  queue.addAll([
+        () async => res.add(1),
+        () async => res.add(2),
+  ], priority: 10); // Because the queue is empty, so it's running as soon as it's added
+  queue.add(() async => res.add(3), priority: 3);
+  queue.add(() async => res.add(4), priority: 2);
+  queue.add(() async => res.add(0), priority: -1); // Support negative number
+  await queue.whenComplete();
+  print(res); // [1, 2, 0, 4, 3]
+}
+```

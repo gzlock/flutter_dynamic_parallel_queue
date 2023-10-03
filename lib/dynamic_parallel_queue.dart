@@ -6,9 +6,10 @@ typedef Task = Future<dynamic> Function();
 
 class _Task {
   final Task task;
+  final int priority;
   final Completer completer = Completer();
 
-  _Task(this.task);
+  _Task(this.task, this.priority);
 }
 
 class Queue {
@@ -32,23 +33,29 @@ class Queue {
   }
 
   /// Add a new task
-  Future add(Task task) async {
-    final _task = _Task(task);
+  Future add(Task task, {priority = 1}) async {
+    final _task = _Task(task, priority);
     _pending.add(_task);
+    _sort();
     _execute();
     return _task.completer.future;
   }
 
   /// Add some new tasks
-  Future addAll(Iterable<Task> tasks) {
+  Future addAll(Iterable<Task> tasks, {priority = 1}) {
     final List<Future> futures = [];
     _pending.addAll(tasks.map((item) {
-      final task = _Task(item);
+      final task = _Task(item, priority);
       futures.add(task.completer.future);
       return task;
     }));
+    _sort();
     _execute();
     return Future.wait(futures);
+  }
+
+  _sort() {
+    _pending.sort((a, b) => a.priority.compareTo(b.priority));
   }
 
   int get processing => _progressing.length;
